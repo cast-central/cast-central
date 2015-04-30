@@ -1,0 +1,37 @@
+{
+  "name": "cast-central-core",
+  "version": "1.0.0",
+  "description": "Core tools/utilities for interfacing with castable devices.",
+  "main": "lib/cast-central.js",
+  "scripts": {
+    "clean": "rm -r docs coverage || true",
+    "doc": "./node_modules/.bin/docco -l linear ./lib/*/* ./lib/*",
+    "lint": "./node_modules/.bin/jshint ./lib/*",
+    "pretest": "npm run-script lint",
+    "test": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- --recursive -R spec -r should",
+    "posttest": "./node_modules/.bin/istanbul check-coverage --statement 90"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cast-central/core.git"
+  },
+  "author": "Justin Lathrop",
+  "license": "IDC",
+  "bugs": {
+    "url": "https://github.com/cast-central/core/issues"
+  },
+  "dependencies": {
+    "docco": "*",
+    "request": "*",
+    "mdns": "*",
+    "xml2js": "*",
+    "node-ssdp": "*"
+  },
+  "devDependencies": {
+    "jshint": "*",
+    "mocha": "*",
+    "should": "*",
+    "sinon": "*",
+    "istanbul": "*"
+  }
+}
