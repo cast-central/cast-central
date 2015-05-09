@@ -1,5 +1,5 @@
 {
-  "name": "cast-central-core",
+  "name": "cast-central",
   "version": "1.0.0",
   "description": "Core tools/utilities for interfacing with castable devices.",
   "main": "lib/cast-central.js",
@@ -25,7 +25,12 @@
     "request": "*",
     "mdns": "*",
     "xml2js": "*",
-    "node-ssdp": "*"
+    "node-ssdp": "*",
+    "castv2": "*",
+    "cluster": "*",
+    "columnify": "*",
+    "optimist": "*",
+    "node-ipc": "*"
   },
   "devDependencies": {
     "jshint": "*",
