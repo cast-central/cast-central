@@ -1,2 +1,2 @@
 # core
-Utilities and libraries used in all the cast-central packages
+Utilities Binaries and Libraries used in all the cast-central packages

@@ -3,6 +3,7 @@
 
 var columnify = require('columnify');
 var ipc = require('node-ipc');
+var debug = require('debug')('cast-central-cli');
 var opts = require('optimist')
     .usage('Connect and control the cast-central-core.\nUsage: $0')
     .alias('l', 'list').describe('l', 'List all available castable devices')
@@ -23,7 +24,7 @@ if(argv.help){
     });
 
     if(argv.list !== false){
-        search = typeof argv.list === 'boolean'? 'ssdp:all': argv.list;
+        search = typeof argv.list === 'boolean'? '*': argv.list;
         sendCommand('list', search, argv.timeout);
     }
 }
@@ -35,30 +36,35 @@ function sendCommand(action, options, timeout){
     ipc.config.id = 'cli';
     ipc.config.retry = 1000;
     ipc.config.maxRetries = timeout;
+    debug('ipc.config', ipc.config);
 
     ipc.connectTo('core-master', function(){
         ipc.of['core-master'].on('connect', function(){
+            debug('sending command to create new service resource');
             ipc.of['core-master'].emit('message', {'action': 'new'});
         });
 
         ipc.of['core-master'].on('message', function(data){
             ipc.config.id = 'cli-'+data.id;
             ipc.config.maxRetries = 20;
+            debug('ipc.config', ipc.config);
 
             var name = 'core-child-'+data.id;
             ipc.connectTo(name, function(){
                 setTimeout(function(){
+                    debug('core-child', 'time out');
                     process.exit(1);
                 }, timeout * 1000);
 
                 ipc.of[name].on('connect', function(){
-                    connected = true;
+                    debug('sending command message to cast-central-service', action, options);
                     ipc.of[name].emit('message', {'action': action, 'options': options});
                 });
 
                 ipc.of[name].on('message', function(data){
                     print(data);
- 
+
+                    debug('disconnecting core-child', 'from cast-central-service');
                     ipc.disconnect(name);
                     ipc.disconnect('core-master');
                     process.exit(0);
@@ -78,6 +84,7 @@ function print(results){
 }
 
 function sort(arr){
+    debug('sorting result array', arr);
     return arr.sort(function(l, r){
         l = l.type;
         r = r.type;

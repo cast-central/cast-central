@@ -1,9 +1,10 @@
-// CAST-CENTRAL-CORE
-// -----------------
+// CAST-CENTRAL-SERVICE
+// --------------------
 
 var cluster     = require('cluster'),
     ipc         = require('node-ipc'),
-    castCentral = require('../lib/cast-central.js');
+    debug       = require('debug')('cast-central-service'),
+    castCentral = require('../index.js');
 
 // The core service layer that directly 
 // interfaces with cast devices.  
@@ -17,8 +18,9 @@ ipc.config.appspace = 'cast-central.core';
 var timeouts = [];
 
 cluster.on('fork', function(worker){
+    debug('generated new worker', worker.id, 'set absolute timeout')
     timeouts[worker.id] = setTimeout(function(){
-        console.log('forcing long running process to quite');
+        debug('forcing long running process to quite');
         if(!worker.process.killed){
             timeouts[worker.id] = null;
             worker.kill();
@@ -27,6 +29,7 @@ cluster.on('fork', function(worker){
 });
 
 cluster.on('exit', function(worker, code, signal){
+    debug('clearing worker', worker.id, 'timeout hook since it exitted with code', code, 'and signal', signal);
     clearTimeout(timeouts[worker.id]);
 });
 
@@ -36,26 +39,28 @@ if(cluster.isMaster){
     ipc.serve(function(){
         ipc.server.on('message', function(data, socket){
             if(data.action === 'new'){
-                console.log('creating new resource');
+                debug('creating new resource', data, socket);
                 var child = cluster.fork([]);
+                debug('spawned child id is', child);
                 ipc.server.emit(socket, 'message', {'id': child.id});
             }
         });
     });
-    
+
+    debug('starting ipc server');
     ipc.server.start();
 }else if(cluster.isWorker){
-    console.log('child-', cluster.worker.id, ' started');
+    debug('child-', cluster.worker.id, ' started');
     ipc.config.id = '-child-'+cluster.worker.id;
 
     ipc.serve(function(){
         ipc.server.on('message', function(data, socket){
             var action = data.action;
             var options = data.options;
-            console.log('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
+            debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
 
             castCentral.discover(options, function(casts){
-                console.log(casts);
+                debug(casts);
 
                 switch(action){
                 case 'list':
@@ -65,7 +70,7 @@ if(cluster.isMaster){
                     ipc.server.emit(socket, 'message', null);
                 }
 
-                console.log('child-', cluster.worker.id, 'exiting');
+                debug('child-', cluster.worker.id, 'exiting');
                 cluster.worker.kill();
             }); // discover
         }); // on 'message'

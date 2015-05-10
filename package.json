@@ -2,7 +2,7 @@
   "name": "cast-central",
   "version": "1.0.0",
   "description": "Core tools/utilities for interfacing with castable devices.",
-  "main": "lib/cast-central.js",
+  "main": "index.js",
   "scripts": {
     "clean": "rm -r docs coverage || true",
     "doc": "./node_modules/.bin/docco -l linear ./lib/*/* ./lib/*",
@@ -13,12 +13,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cast-central/core.git"
+    "url": "https://github.com/cast-central/cast-central.git"
   },
   "author": "Justin Lathrop",
   "license": "IDC",
   "bugs": {
-    "url": "https://github.com/cast-central/core/issues"
+    "url": "https://github.com/cast-central/cast-central/issues"
   },
   "dependencies": {
     "docco": "*",
@@ -30,6 +30,7 @@
     "cluster": "*",
     "columnify": "*",
     "optimist": "*",
+    "debug": "*",
     "node-ipc": "*"
   },
   "devDependencies": {
