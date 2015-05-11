@@ -31,6 +31,7 @@
     "columnify": "*",
     "optimist": "*",
     "debug": "*",
+    "async": "*",
     "node-ipc": "*"
   },
   "devDependencies": {
