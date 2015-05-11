@@ -59,7 +59,7 @@ if(cluster.isMaster){
             var options = data.options;
             debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
 
-            castCentral.discover(options, function(casts){
+            castCentral.discover(castCentral.MDNS, options, function(casts){
                 debug(casts);
 
                 switch(action){
