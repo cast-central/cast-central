@@ -1,5 +1,5 @@
-// CAST-CENTRAL-CLI
-// ----------------
+// CAST-CENTRAL-CLIENT
+// -------------------
 
 var columnify = require('columnify');
 var ipc = require('node-ipc');
@@ -64,7 +64,7 @@ function sendCommand(action, options, timeout){
                 ipc.of[name].on('message', function(data){
                     print(data);
 
-                    debug('disconnecting core-child', 'from cast-central-service');
+                    debug('disconnecting core-child from cast-central-service');
                     ipc.disconnect(name);
                     ipc.disconnect('core-master');
                     process.exit(0);
@@ -79,17 +79,16 @@ function print(results){
         truncate: true,
         minWidth: 10,
         maxWidth: 40,
-        columns: ["type", "name"]
+        columns: ["name", "location"]
     }));
 }
 
 function sort(arr){
     debug('sorting result array', arr);
     return arr.sort(function(l, r){
-        l = l.type;
-        r = r.type;
+        l = l.name;
+        r = r.name;
 
         return(l.localeCompare(r) - r.localeCompare(l));
     });
 }
-
