@@ -79,7 +79,7 @@ function print(results){
         truncate: true,
         minWidth: 10,
         maxWidth: 40,
-        columns: ["name", "location"]
+        columns: ["name", "location", "port"]
     }));
 }
 

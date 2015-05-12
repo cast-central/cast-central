@@ -25,7 +25,7 @@ cluster.on('fork', function(worker){
             timeouts[worker.id] = null;
             worker.kill();
         }
-    }, 10000);
+    }, 1000000);
 });
 
 cluster.on('exit', function(worker, code, signal){
@@ -66,15 +66,26 @@ if(cluster.isMaster){
                 case 'list':
                     ipc.server.emit(socket, 'message', casts);
                     break;
+                case 'launch':
+                    for(cast in casts){
+                        if(cast.name === options.name){
+                            cast.connect('CC1AD845', {}, function(){
+                                workerExit();
+                            });
+                        }
+                    }
+                    break;
                 default:
                     ipc.server.emit(socket, 'message', null);
                 }
-
-                debug('child-', cluster.worker.id, 'exiting');
-                cluster.worker.kill();
             }); // discover
         }); // on 'message'
     }); // serve
 
     ipc.server.start();
+}
+
+function workerExit(){
+    debug('child-', cluster.worker.id, 'exiting');
+    cluster.worker.kill();
 }
