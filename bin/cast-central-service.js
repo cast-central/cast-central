@@ -59,17 +59,18 @@ if(cluster.isMaster){
             var options = data.options;
             debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
 
-            castCentral.discover(castCentral.MDNS, options, function(casts){
+            castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
                 debug(casts);
 
                 switch(action){
                 case 'list':
                     ipc.server.emit(socket, 'message', casts);
+                    workerExit();
                     break;
                 case 'launch':
                     for(cast in casts){
-                        if(cast.name === options.name){
-                            cast.connect('CC1AD845', {}, function(){
+                        if(casts[cast].name === options.name){
+                            casts[cast].connect(options.app, {}, function(){
                                 workerExit();
                             });
                         }
@@ -77,6 +78,7 @@ if(cluster.isMaster){
                     break;
                 default:
                     ipc.server.emit(socket, 'message', null);
+                    workerExit();
                 }
             }); // discover
         }); // on 'message'

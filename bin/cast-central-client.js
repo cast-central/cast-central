@@ -5,14 +5,22 @@ var columnify = require('columnify');
 var ipc = require('node-ipc');
 var debug = require('debug')('cast-central-cli');
 var opts = require('optimist')
-    .usage('Connect and control the cast-central-core.\nUsage: $0')
-    .alias('l', 'list').describe('l', 'List all available castable devices')
-    .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for response').default('t', 10)
+    .usage(
+        'Connect and control the cast-central-service.\n'+
+        'Usage: $0 <actions> <options>\n\n'+
+        'Actions:\n'+
+        '  list\t\t  List all available casts given the protocol and search term to use\n'+
+        '  launch\t  Launch an app for a specific cast given the name, search term, and protocol for the cast'
+    )
+    .alias('p', 'protocol').describe('p', 'Cast discovery protocol to use [mdns, ssdp]').default('p', 'mdns')
+    .alias('s', 'search').describe('s', 'Search term to look for cast devices').default('s', 'googlecast')
+    .alias('c', 'cast').describe('c', 'Name of cast device to communicate with')
+    .alias('a', 'app').describe('a', 'Launch an application on the cast device').default('a', 'CC1AD845')
+    .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for connect').default('t', 10)
     .alias('h', 'help').describe('h', 'Shows this usage');
 var argv = opts.argv;
 
-// The main interface into the cast-central-core service 
-// allowing external, pluggable, interfaces though this.
+// The main debug interface into the cast-central-service.
 
 if(argv.help){
     opts.showHelp();
@@ -23,9 +31,20 @@ if(argv.help){
         process.exit(1);
     });
 
-    if(argv.list !== false){
-        search = typeof argv.list === 'boolean'? '*': argv.list;
-        sendCommand('list', search, argv.timeout);
+    if(argv._.length > 0){
+        for(action in argv._){
+            validate(argv._[action], argv);
+
+            sendCommand(argv._[action], {
+                protocol: argv.protocol,
+                search: argv.search,
+                name: argv.cast,
+                app: argv.app
+            }, argv.timeout);
+        }
+    }else{
+        opts.showHelp();
+        process.exit(1);
     }
 }
 
@@ -91,4 +110,16 @@ function sort(arr){
 
         return(l.localeCompare(r) - r.localeCompare(l));
     });
+}
+
+function validate(action, args){
+    switch(action){
+    case 'list':
+        return;
+    case 'launch':
+        return;
+    }
+
+    opts.showHelp();
+    process.exit(1);
 }
