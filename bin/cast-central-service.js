@@ -4,6 +4,7 @@
 var cluster     = require('cluster'),
     ipc         = require('node-ipc'),
     debug       = require('debug')('cast-central-service'),
+    chromecast  = require('../lib/casts/chromecast.js'),
     castCentral = require('../index.js');
 
 // The core service layer that directly 
@@ -59,28 +60,44 @@ if(cluster.isMaster){
             var options = data.options;
             debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
 
-            castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
-                debug(casts);
-
-                switch(action){
-                case 'list':
+            switch(action){
+            case 'list':
+                castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
+                    debug(casts);
                     ipc.server.emit(socket, 'message', casts);
                     workerExit();
-                    break;
-                case 'launch':
-                    for(cast in casts){
-                        if(casts[cast].name === options.name){
-                            casts[cast].connect(options.app, {}, function(){
-                                workerExit();
-                            });
+                });
+
+                break;
+            case 'launch':
+                // TODO: Detect what type of cast to initialize
+                if(!options.ip){
+                    castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
+                        debug(casts);
+                        for(cast in casts){
+                            if(casts[cast].name === options.name){
+                                casts[cast].connect(options.app, {}, function(){
+                                    workerExit();
+                                });
+                            }
                         }
-                    }
-                    break;
-                default:
-                    ipc.server.emit(socket, 'message', null);
-                    workerExit();
+                    });
+                }else{
+                    (new chromecast.chromecast({
+                        addresses: [options.ip],
+                        port: options.port || 8009,
+                        name: options.name
+
+                    })).connect(options.app, {}, function(){
+                        workerExit();
+                    });
                 }
-            }); // discover
+
+                break;
+            default:
+                ipc.server.emit(socket, 'message', null);
+                workerExit();
+            }
         }); // on 'message'
     }); // serve
 

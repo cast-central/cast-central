@@ -15,6 +15,8 @@ var opts = require('optimist')
     .alias('p', 'protocol').describe('p', 'Cast discovery protocol to use [mdns, ssdp]').default('p', 'mdns')
     .alias('s', 'search').describe('s', 'Search term to look for cast devices').default('s', 'googlecast')
     .alias('c', 'cast').describe('c', 'Name of cast device to communicate with')
+    .alias('i', 'ip').describe('i', 'The IP Address of the cast device')
+    .alias('', 'port').describe('port', 'The port of the cast device')
     .alias('a', 'app').describe('a', 'Launch an application on the cast device').default('a', 'CC1AD845')
     .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for connect').default('t', 10)
     .alias('h', 'help').describe('h', 'Shows this usage');
@@ -39,7 +41,9 @@ if(argv.help){
                 protocol: argv.protocol,
                 search: argv.search,
                 name: argv.cast,
-                app: argv.app
+                app: argv.app,
+                ip: argv.ip,
+                port: argv.port
             }, argv.timeout);
         }
     }else{
