@@ -60,44 +60,36 @@ if(cluster.isMaster){
             var options = data.options;
             debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
 
-            switch(action){
-            case 'list':
-                castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
-                    debug(casts);
+            // Always discover all available casting devices
+            castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
+                debug(casts);
+
+                // Figure out what action to perform
+                if(action === 'list'){
                     ipc.server.emit(socket, 'message', casts);
                     workerExit();
-                });
-
-                break;
-            case 'launch':
-                // TODO: Detect what type of cast to initialize
-                if(!options.ip){
-                    castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
-                        debug(casts);
-                        for(cast in casts){
-                            if(casts[cast].name === options.name){
-                                casts[cast].connect(options.app, {}, function(){
-                                    workerExit();
-                                });
-                            }
-                        }
-                    });
                 }else{
-                    (new chromecast.chromecast({
-                        addresses: [options.ip],
-                        port: options.port || 8009,
-                        name: options.name
+                    // All other actions require a specific cast
+                    for(cast in casts){
+                        if(casts[cast].name !== options.name){ continue; }
+                        cast = casts[cast];
 
-                    })).connect(options.app, {}, function(){
-                        workerExit();
-                    });
+                        // Now Figure out what action to perform
+                        switch(action){
+                        case 'launch':
+                            cast.launch(options.app, options.params, function(){
+                                // app with params is complete
+                                ipc.server.emit(socket, 'message', 'done');
+                                workerExit();
+                            });
+                            break;
+                        default:
+                            ipc.server.emit(socket, 'message', 'invalid action');
+                            workerExit();
+                        }
+                    }
                 }
-
-                break;
-            default:
-                ipc.server.emit(socket, 'message', null);
-                workerExit();
-            }
+            });
         }); // on 'message'
     }); // serve
 
