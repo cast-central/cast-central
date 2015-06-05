@@ -27,6 +27,7 @@
     "xml2js": "*",
     "node-ssdp": "*",
     "castv2-client": "*",
+    "castv2-youtube": "*",
     "cluster": "*",
     "columnify": "*",
     "optimist": "*",

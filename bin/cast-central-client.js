@@ -7,16 +7,28 @@ var debug = require('debug')('cast-central-cli');
 var opts = require('optimist')
     .usage(
         'Connect and control the cast-central-service.\n'+
-        'Usage: $0 <actions> <options>\n\n'+
-        'Actions:\n'+
-        '  list\t\t  List all available casts given the protocol and search term to use\n'+
-        '  launch\t  Launch an app for a specific cast given the name, search term, and protocol for the cast'
+        'Usage: $0 <subset> <options>\n\n'+
+        'Subset:\n'+
+        '  resource\tControls what processes run within the cast-central-service\n'+
+        '  cast\t\tSends commands for controlling casting devices'
     )
+    // Resource Options
+    .alias('l', 'list').describe('l', 'Lists all currently running resources or casts available')
+    .alias('n', 'new').describe('n', 'Starts a new resource (shouldn\'t be used)')
+    .alias('d', 'delete').describe('d', 'Forcefully stops and deletes a resource')
+    .alias('i', 'id').describe('i', 'Used when forcefully stopping a resource')
+    // Cast Options
     .alias('p', 'protocol').describe('p', 'Cast discovery protocol to use [mdns, ssdp]').default('p', 'mdns')
     .alias('s', 'search').describe('s', 'Search term to look for cast devices').default('s', 'googlecast')
     .alias('c', 'cast').describe('c', 'Name of cast device to communicate with')
-    .alias('a', 'app').describe('a', 'Launch an application on the cast device').default('a', 'CC1AD845')
-    .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for connect').default('t', 10)
+    .alias('a', 'app').describe('a', 'Launch an application on the cast device [DefaultMediaReceiver, Youtube]')
+    .alias('m', 'media').describe('m', 'Media to load onto launched application')
+    .alias('', 'load').describe('load', 'Load media to the currently launched application')
+    .alias('', 'launch').describe('launch', 'Launch an application the casting device')
+    .alias('v', 'volume').describe('v', 'Set the volume of the casting device').default('v', -1)
+    .alias('', 'mute').describe('mute', 'Mute the casting device [true, false]').default('mute', '')
+    .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for connect [> 0]').default('t', 10)
+    .alias('', 'seek').describe('seek', 'Seek the media currently being casted').default('seek', 0)
     .alias('h', 'help').describe('h', 'Shows this usage');
 var argv = opts.argv;
 
@@ -27,21 +39,82 @@ if(argv.help){
     process.exit(0);
 }else{
     process.on('uncaughtException', function(err){
-        console.log('uncaught exception:', err);
+        debug('uncaught exception:', err);
         process.exit(1);
     });
 
-    if(argv._.length > 0){
-        for(action in argv._){
-            validate(argv._[action], argv);
+    if(argv._.length === 1){
+        var t = argv.timeout;
 
-            sendCommand(argv._[action], {
-                protocol: argv.protocol,
-                search: argv.search,
-                name: argv.cast,
-                app: argv.app,
-                params: {}
-            }, argv.timeout);
+        switch(argv._[0]){
+        case 'resource':
+            if(argv.list){
+                sendResourceCommand('list', {}, t);
+            }else if(argv.new){
+                sendResourceCommand('new', {}, t);
+            }else if(argv.delete){
+                sendResourceCommand('delete', {
+                    id: argv.id || -1
+                }, t);
+            }else{
+                console.log('Incorrect options [list, new, delete -i <id>]');
+                opts.showHelp();
+                process.exit(1);
+            }
+
+            break;
+        case 'cast':
+            if(argv.list){
+                sendCastCommand('list', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast
+                }, t);
+            }else if(argv.launch){
+                sendCastCommand('launch', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast,
+                    app: argv.app
+                }, t);
+            }else if(argv.load){
+                sendCastCommand('load', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast,
+                    media: argv.media
+                }, t);
+            }else if(argv.seek > 0){
+                sendCastCommand('seek', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast,
+                    amount: argv.seek
+                }, t);
+            }else if(argv.mute !== ''){
+                sendCastCommand('mute', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast,
+                    mute: argv.mute === 'true'
+                }, t);
+            }else if(argv.volume !== -1){
+                sendCastCommand('volume', {
+                    protocol: argv.protocol,
+                    search: argv.search,
+                    name: argv.cast,
+                    volume: argv.volume
+                }, t);
+            }else{
+                console.log('Incorrect options [list, launch, load, seek, mute, volume]');
+                opts.showHelp();
+                process.exit(1);
+            }
+
+            break;
+        default:
+            opts.showHelp();
+            process.exit(1);
         }
     }else{
         opts.showHelp();
@@ -49,7 +122,7 @@ if(argv.help){
     }
 }
 
-function sendCommand(action, options, timeout){
+function sendCastCommand(action, options, timeout){
     ipc.config.silent = true;
     ipc.config.socketRoot = '/tmp/';
     ipc.config.appspace = 'cast-central.';
@@ -111,16 +184,4 @@ function sort(arr){
 
         return(l.localeCompare(r) - r.localeCompare(l));
     });
-}
-
-function validate(action, args){
-    switch(action){
-    case 'list':
-        return;
-    case 'launch':
-        return;
-    }
-
-    opts.showHelp();
-    process.exit(1);
 }

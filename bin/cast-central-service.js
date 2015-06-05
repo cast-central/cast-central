@@ -12,38 +12,54 @@ var cluster     = require('cluster'),
 // Communication with this is only through 
 // the IPC stack.
 
+raw_workers = [];
+workers = [];
+
 ipc.config.silent = true;
 ipc.config.socketRoot = '/tmp/';
 ipc.config.appspace = 'cast-central.core';
 
-var timeouts = [];
-
-cluster.on('fork', function(worker){
-    debug('generated new worker', worker.id, 'set absolute timeout')
-    timeouts[worker.id] = setTimeout(function(){
-        debug('forcing long running process to quite');
-        if(!worker.process.killed){
-            timeouts[worker.id] = null;
-            worker.kill();
-        }
-    }, 1000000);
-});
-
-cluster.on('exit', function(worker, code, signal){
-    debug('clearing worker', worker.id, 'timeout hook since it exitted with code', code, 'and signal', signal);
-    clearTimeout(timeouts[worker.id]);
-});
-
 if(cluster.isMaster){
     ipc.config.id = '-master';
-    
+
     ipc.serve(function(){
         ipc.server.on('message', function(data, socket){
-            if(data.action === 'new'){
+            switch(data.action){
+            case 'new':
                 debug('creating new resource', data, socket);
                 var child = cluster.fork([]);
-                debug('spawned child id is', child);
+                raw_workers[child.id] = child;
+
+                child.on('message', function(msg){
+                    debug('master received message from worker', msg);
+                    if(msg.alive){
+                        workers[msg.id] = {
+                            id: msg.id,
+                            cast: msg.cast
+                        };
+                    }else{
+                        workers[msg.id] = null;
+                        raw_workers[msg.id] = null;
+                    }
+                });
+
+                debug('spawned child id is', child.id);
                 ipc.server.emit(socket, 'message', {'id': child.id});
+                break;
+            case 'delete':
+                debug('deleting', data.id);
+                workers[data.id] = null;
+                raw_workers[data.id].kill();
+                raw_workers[data.id] = null;
+                ipc.server.emit(socket, 'message', 'done');
+                break;
+            case 'list':
+                debug('listing all resources');
+                ipc.server.emit(socket, 'message', workers);
+                break;
+            default:
+                debug('unknown action:', data.action);
+                ipc.server.emit(socket, 'message', 'unknown action');
             }
         });
     });
@@ -67,7 +83,7 @@ if(cluster.isMaster){
                 // Figure out what action to perform
                 if(action === 'list'){
                     ipc.server.emit(socket, 'message', casts);
-                    workerExit();
+                    workerExit(cluster.worker);
                 }else{
                     // All other actions require a specific cast
                     for(cast in casts){
@@ -77,15 +93,45 @@ if(cluster.isMaster){
                         // Now Figure out what action to perform
                         switch(action){
                         case 'launch':
-                            cast.launch(options.app, options.params, function(){
-                                // app with params is complete
-                                ipc.server.emit(socket, 'message', 'done');
-                                workerExit();
+                            cast.launch(options.app, function(){
+                                console.log(workers);
+                                ipc.server.emit(socket, 'message', true);
+                            });
+
+                            process.send({
+                                alive: true,
+                                id: cluster.worker.id,
+                                cast: cast.name
+                            });
+                            break;
+                        case 'load':
+                            cast.load(options.media, null, function(err){
+                                ipc.server.emit(socket, 'message', err || true);
+                            });
+                            break;
+                        case 'stop':
+                            cast.stop(function(){
+                                ipc.server.emit(socket, 'message', true);
+                                workerExit(cluster.worker);
+                            });
+                            break;
+                        case 'seek':
+                            cast.seek(options.amount, function(){
+                                ipc.server.emit(socket, 'message', true);
+                            });
+                            break;
+                        case 'mute':
+                            cast.setMute(options.mute, function(){
+                                ipc.server.emit(socket, 'message', true);
+                            });
+                            break;
+                        case 'volume':
+                            cast.setVolume(options.volume, function(){
+                                ipc.server.emit(socket, 'message', true);
                             });
                             break;
                         default:
                             ipc.server.emit(socket, 'message', 'invalid action');
-                            workerExit();
                         }
                     }
                 }
@@ -96,7 +142,11 @@ if(cluster.isMaster){
     ipc.server.start();
 }
 
-function workerExit(){
-    debug('child-', cluster.worker.id, 'exiting');
-    cluster.worker.kill();
+function workerExit(worker){
+    debug('child-', worker.id, 'exiting');
+    process.send({
+        alive: false,
+        id: worker.id
+    });
+    worker.kill();
 }
