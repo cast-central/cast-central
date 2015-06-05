@@ -122,6 +122,11 @@ if(argv.help){
     }
 }
 
+function sendResourceCommand(action, options, timeout){
+    // TODO: Take out 'sendCastCommand' 'core-master' communication to this function.
+    //       Leave core-child-<id> in 'sendCastCommand' function.
+}
+
 function sendCastCommand(action, options, timeout){
     ipc.config.silent = true;
     ipc.config.socketRoot = '/tmp/';
