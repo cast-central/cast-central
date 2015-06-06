@@ -44,18 +44,23 @@ if(argv.help){
     });
 
     if(argv._.length === 1){
-        var t = argv.timeout;
+        ipc.config.silent = true;
+        ipc.config.socketRoot = '/tmp/';
+        ipc.config.appspace = 'cast-central.';
+        ipc.config.id = 'cli';
+        ipc.config.retry = 1000;
+        ipc.config.maxRetries = argv.timeout;
 
         switch(argv._[0]){
         case 'resource':
             if(argv.list){
-                sendResourceCommand('list', {}, t);
+                sendResourceCommand('list', {});
             }else if(argv.new){
-                sendResourceCommand('new', {}, t);
+                sendResourceCommand('new', {});
             }else if(argv.delete){
                 sendResourceCommand('delete', {
-                    id: argv.id || -1
-                }, t);
+                    id: argv.id
+                });
             }else{
                 console.log('Incorrect options [list, new, delete -i <id>]');
                 opts.showHelp();
@@ -66,45 +71,51 @@ if(argv.help){
         case 'cast':
             if(argv.list){
                 sendCastCommand('list', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast
-                }, t);
+                });
             }else if(argv.launch){
                 sendCastCommand('launch', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast,
                     app: argv.app
-                }, t);
+                });
             }else if(argv.load){
                 sendCastCommand('load', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast,
                     media: argv.media
-                }, t);
+                });
             }else if(argv.seek > 0){
                 sendCastCommand('seek', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast,
                     amount: argv.seek
-                }, t);
+                });
             }else if(argv.mute !== ''){
                 sendCastCommand('mute', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast,
                     mute: argv.mute === 'true'
-                }, t);
+                });
             }else if(argv.volume !== -1){
                 sendCastCommand('volume', {
+                    id: argv.id,
                     protocol: argv.protocol,
                     search: argv.search,
                     name: argv.cast,
                     volume: argv.volume
-                }, t);
+                });
             }else{
                 console.log('Incorrect options [list, launch, load, seek, mute, volume]');
                 opts.showHelp();
@@ -122,52 +133,40 @@ if(argv.help){
     }
 }
 
-function sendResourceCommand(action, options, timeout){
-    // TODO: Take out 'sendCastCommand' 'core-master' communication to this function.
-    //       Leave core-child-<id> in 'sendCastCommand' function.
-}
-
-function sendCastCommand(action, options, timeout){
-    ipc.config.silent = true;
-    ipc.config.socketRoot = '/tmp/';
-    ipc.config.appspace = 'cast-central.';
-    ipc.config.id = 'cli';
-    ipc.config.retry = 1000;
-    ipc.config.maxRetries = timeout;
-    debug('ipc.config', ipc.config);
-
+function sendResourceCommand(action, options){
     ipc.connectTo('core-master', function(){
         ipc.of['core-master'].on('connect', function(){
-            debug('sending command to create new service resource');
-            ipc.of['core-master'].emit('message', {'action': 'new'});
+            debug('sending', action, '(', options, ') to master');
+            ipc.of['core-master'].emit('message', {
+                action: action,
+                options: options
+            })
         });
 
         ipc.of['core-master'].on('message', function(data){
-            ipc.config.id = 'cli-'+data.id;
-            ipc.config.maxRetries = 20;
-            debug('ipc.config', ipc.config);
+            console.log(data);
+            ipc.disconnect('core-master');
+            process.exit(0);
+        });
+    });
+}
 
-            var name = 'core-child-'+data.id;
-            ipc.connectTo(name, function(){
-                setTimeout(function(){
-                    debug('core-child', 'time out');
-                    process.exit(1);
-                }, timeout * 1000);
+function sendCastCommand(action, options){
+    ipc.config.id = 'cli-'+options.id;
+    var name = 'core-child-'+options.id;
 
-                ipc.of[name].on('connect', function(){
-                    debug('sending command message to cast-central-service', action, options);
-                    ipc.of[name].emit('message', {'action': action, 'options': options});
-                });
+    ipc.connectTo(name, function(){
+        ipc.of[name].on('connect', function(){
+            debug('sending command message to cast-central-service', action, options);
+            ipc.of[name].emit('message', {'action': action, 'options': options});
+        });
 
-                ipc.of[name].on('message', function(data){
-                    print(data);
+        ipc.of[name].on('message', function(data){
+            print(data);
 
-                    debug('disconnecting core-child from cast-central-service');
-                    ipc.disconnect(name);
-                    ipc.disconnect('core-master');
-                    process.exit(0);
-                });
-            });
+            debug('disconnecting core-child from cast-central-service');
+            ipc.disconnect(name);
+            process.exit(0);
         });
     });
 }

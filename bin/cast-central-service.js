@@ -12,8 +12,8 @@ var cluster     = require('cluster'),
 // Communication with this is only through 
 // the IPC stack.
 
-raw_workers = [];
-workers = [];
+raw_workers = {};
+workers = {};
 
 ipc.config.silent = true;
 ipc.config.socketRoot = '/tmp/';
@@ -38,8 +38,8 @@ if(cluster.isMaster){
                             cast: msg.cast
                         };
                     }else{
-                        workers[msg.id] = null;
-                        raw_workers[msg.id] = null;
+                        delete workers[msg.id];
+                        delete raw_workers[msg.id];
                     }
                 });
 
@@ -47,15 +47,18 @@ if(cluster.isMaster){
                 ipc.server.emit(socket, 'message', {'id': child.id});
                 break;
             case 'delete':
-                debug('deleting', data.id);
-                workers[data.id] = null;
-                raw_workers[data.id].kill();
-                raw_workers[data.id] = null;
+                debug('deleting', data.options.id);
+                if(raw_workers[data.options.id]){
+                    raw_workers[data.options.id].kill();
+                }
+
+                delete workers[data.options.id];
+                delete raw_workers[data.options.id];
                 ipc.server.emit(socket, 'message', 'done');
                 break;
             case 'list':
                 debug('listing all resources');
-                ipc.server.emit(socket, 'message', workers);
+                ipc.server.emit(socket, 'message', jsonWorkers(raw_workers));
                 break;
             default:
                 debug('unknown action:', data.action);
@@ -83,7 +86,6 @@ if(cluster.isMaster){
                 // Figure out what action to perform
                 if(action === 'list'){
                     ipc.server.emit(socket, 'message', casts);
-                    workerExit(cluster.worker);
                 }else{
                     // All other actions require a specific cast
                     for(cast in casts){
@@ -149,4 +151,14 @@ function workerExit(worker){
         id: worker.id
     });
     worker.kill();
+}
+
+function jsonWorkers(workers){
+    var jsons = [];
+
+    for(worker in workers){
+        jsons.push(workers[worker].id);
+    }
+
+    return jsons;
 }
