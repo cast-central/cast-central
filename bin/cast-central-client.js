@@ -23,12 +23,13 @@ var opts = require('optimist')
     .alias('c', 'cast').describe('c', 'Name of cast device to communicate with')
     .alias('a', 'app').describe('a', 'Launch an application on the cast device [DefaultMediaReceiver, Youtube]')
     .alias('m', 'media').describe('m', 'Media to load onto launched application')
-    .alias('', 'load').describe('load', 'Load media to the currently launched application')
-    .alias('', 'launch').describe('launch', 'Launch an application the casting device')
+    .describe('load', 'Load media to the currently launched application')
+    .describe('launch', 'Launch an application the casting device')
     .alias('v', 'volume').describe('v', 'Set the volume of the casting device').default('v', -1)
-    .alias('', 'mute').describe('mute', 'Mute the casting device [true, false]').default('mute', '')
+    .describe('mute', 'Mute the casting device [true, false]').default('mute', -1)
     .alias('t', 'timeout').describe('t', 'Timeout in seconds to wait for connect [> 0]').default('t', 10)
-    .alias('', 'seek').describe('seek', 'Seek the media currently being casted').default('seek', 0)
+    .describe('seek', 'Seek the media currently being casted').default('seek', 0)
+    .describe('stop', 'Stop the currently launched app')
     .alias('h', 'help').describe('h', 'Shows this usage');
 var argv = opts.argv;
 
@@ -100,7 +101,7 @@ if(argv.help){
                     name: argv.cast,
                     amount: argv.seek
                 });
-            }else if(argv.mute !== ''){
+            }else if(argv.mute !== -1){
                 sendCastCommand('mute', {
                     id: argv.id,
                     protocol: argv.protocol,
@@ -115,6 +116,10 @@ if(argv.help){
                     search: argv.search,
                     name: argv.cast,
                     volume: argv.volume
+                });
+            }else if(argv.stop){
+                sendCastCommand('stop', {
+                    id: argv.id
                 });
             }else{
                 console.log('Incorrect options [list, launch, load, seek, mute, volume]');

@@ -72,72 +72,41 @@ if(cluster.isMaster){
 }else if(cluster.isWorker){
     debug('child-', cluster.worker.id, ' started');
     ipc.config.id = '-child-'+cluster.worker.id;
+    var cast = null;
 
     ipc.serve(function(){
         ipc.server.on('message', function(data, socket){
             var action = data.action;
             var options = data.options;
-            debug('child-', cluster.worker.id, ' processing ', action, '(', options, ')');
+            debug('child-', cluster.worker.id, 'processing', action, '(', options, ')');
 
-            // Always discover all available casting devices
-            castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
-                debug(casts);
-
-                // Figure out what action to perform
-                if(action === 'list'){
-                    ipc.server.emit(socket, 'message', casts);
-                }else{
-                    // All other actions require a specific cast
-                    for(cast in casts){
-                        if(casts[cast].name !== options.name){ continue; }
-                        cast = casts[cast];
-
-                        // Now Figure out what action to perform
-                        switch(action){
-                        case 'launch':
-                            cast.launch(options.app, function(){
-                                console.log(workers);
-                                ipc.server.emit(socket, 'message', true);
-                            });
+            if(cast === null){
+                castCentral.discover(castCentral[options.protocol.toUpperCase()], options.search, function(casts){
+                    debug(casts);
+                    if(action === 'list'){
+                        ipc.server.emit(socket, 'message', casts);
+                        return;
+                    }else{
+                        // All other actions require a specific cast
+                        for(c in casts){
+                            if(casts[c].name !== options.name){ continue; }
+                            cast = casts[c];
 
                             process.send({
                                 alive: true,
                                 id: cluster.worker.id,
                                 cast: cast.name
                             });
+
                             break;
-                        case 'load':
-                            cast.load(options.media, null, function(err){
-                                ipc.server.emit(socket, 'message', err || true);
-                            });
-                            break;
-                        case 'stop':
-                            cast.stop(function(){
-                                ipc.server.emit(socket, 'message', true);
-                                workerExit(cluster.worker);
-                            });
-                            break;
-                        case 'seek':
-                            cast.seek(options.amount, function(){
-                                ipc.server.emit(socket, 'message', true);
-                            });
-                            break;
-                        case 'mute':
-                            cast.setMute(options.mute, function(){
-                                ipc.server.emit(socket, 'message', true);
-                            });
-                            break;
-                        case 'volume':
-                            cast.setVolume(options.volume, function(){
-                                ipc.server.emit(socket, 'message', true);
-                            });
-                            break;
-                        default:
-                            ipc.server.emit(socket, 'message', 'invalid action');
                         }
+
+                        processAction(cast, action, options, socket);
                     }
-                }
-            });
+                });
+            }else{
+                processAction(cast, action, options, socket);
+            }
         }); // on 'message'
     }); // serve
 
@@ -161,4 +130,43 @@ function jsonWorkers(workers){
     }
 
     return jsons;
+}
+
+function processAction(cast, action, options, socket){
+    // Figure out what action to perform
+    switch(action){
+    case 'launch':
+        cast.launch(options.app, function(){
+            ipc.server.emit(socket, 'message', true);
+        });
+        break;
+    case 'load':
+        cast.load(options.media, null, function(err){
+            ipc.server.emit(socket, 'message', err || true);
+        });
+        break;
+    case 'stop':
+        cast.stop(function(){
+            ipc.server.emit(socket, 'message', true);
+            workerExit(cluster.worker);
+        });
+        break;
+    case 'seek':
+        cast.seek(options.amount, function(){
+            ipc.server.emit(socket, 'message', true);
+        });
+        break;
+    case 'mute':
+        cast.setMute(options.mute, function(){
+            ipc.server.emit(socket, 'message', true);
+        });
+        break;
+    case 'volume':
+        cast.setVolume(options.volume, function(){
+            ipc.server.emit(socket, 'message', true);
+        });
+        break;
+    default:
+        ipc.server.emit(socket, 'message', 'invalid action');
+    }
 }
