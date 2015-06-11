@@ -1,6 +1,6 @@
 {
   "name": "cast-central",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Core tools/utilities for interfacing with castable devices.",
   "main": "index.js",
   "scripts": {
