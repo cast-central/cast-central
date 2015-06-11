@@ -26,6 +26,7 @@ This is in the works still.. It will be complete soon.  You can follow this late
 This is the main interface for controlling the 'cast-central-service' while it's running.  It is a full command line interface and allows for performing any action with the 'cast-central-service'.
 
 ### Usage (because I'm lazy)
+```
 $ cast-central-client.js --help
 Connect and control the cast-central-service.
 Usage: node ./bin/cast-central-client.js <subset> <options>
@@ -52,6 +53,7 @@ Options:
   --seek          Seek the media currently being casted                                     [default: 0]
   --stop          Stop the currently launched app
   -h, --help      Shows this usage
+```
 
 ## The Ecosystem
 TODO: Insert Diagram here...
