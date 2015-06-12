@@ -1,6 +1,8 @@
 # Cast Central
 Welcome to 'cast-central' you're one stop shop for interfacing with casting devices (chromecast, or roku, send pull request is more is needed!) all in one place.  Just start the 'cast-central-service' on a you're target linux machine and install the 'cast-central-client' to interface with it.  Further information on what each gives you follows.
 
+![the_ecosystem](https://raw.githubusercontent.com/cast-central/cast-central/wiki_stuff/images/the_ecosystem.png)
+
 ## cast-central-service
 This is the main service which controls all the casting devices on a single network.  It has a notion of resources (which translate to processes) attached to one and only one casting device (or none).  The idea is, for each casting device you can spawn a new resource to manage it giving you the ability to load media onto it, mute, set the volume, or whatever else that specific casting device allows.
 
@@ -54,9 +56,6 @@ Options:
   --stop          Stop the currently launched app
   -h, --help      Shows this usage
 ```
-
-## The Ecosystem
-TODO: Insert Diagram here...
 
 # Contribute
 Feel free to fork and send pull requests whenever.. Please mind that this is definitely not my full time job but is a hobby and turns out to be pretty useful for controlling all of my chromecasts in one spot.  Here are some things that will be in the works soon (unless someone else gets to them first).
