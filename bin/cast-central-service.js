@@ -7,9 +7,9 @@ var app         = require('express')(),
     logger      = require('../lib/utils/logger.js'),
     errors       = require('../lib/utils/errors.js'),
     debug       = require('debug')('cast-central-service'),
-    chromecast  = require('../lib/casts/chromecast.js'),
-    roku        = require('../lib/casts/roku.js'),
-    other       = require('../lib/casts/other.js');
+    chromecast  = require('../lib/v1/chromecast.js'),
+    roku        = require('../lib/v1/roku.js'),
+    other       = require('../lib/v1/other.js');
     //castCentral = require('../index.js');
 
 // The core service layer that directly 
@@ -33,6 +33,7 @@ app.all('*', logger);
 app.use(errors.error_500);
 
 // Chromecast
+app.get('/v1/chromecast/list', chromecast.list);
 app.get('/v1/chromecast/launch', chromecast.launch);
 app.get('/v1/chromecast/load', chromecast.load);
 app.get('/v1/chromecast/setVolume', chromecast.setVolume);
