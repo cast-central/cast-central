@@ -3,7 +3,7 @@
   "version": "0.0.1-2",
   "description": "Core tools/utilities for interfacing with castable devices.",
   "keywords": ["cast", "casting", "roku", "cast-central", "service", "chromecast", "googlecast"],
-  "main": "index.js",
+  "main": "./bin/cast-central-service.js",
   "scripts": {
     "clean": "rm -r docs coverage || true",
     "doc": "./node_modules/.bin/docco -l linear ./lib/*/* ./lib/*",
@@ -34,7 +34,7 @@
     "optimist": "*",
     "debug": "*",
     "async": "*",
-    "node-ipc": "*"
+    "express": "*"
   },
   "devDependencies": {
     "jshint": "*",

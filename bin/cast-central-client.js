@@ -1,3 +1,5 @@
+#! /usr/bin/env nodejs
+
 // CAST-CENTRAL-CLIENT
 // -------------------
 
@@ -62,6 +64,9 @@ if(argv.help){
                 sendResourceCommand('delete', {
                     id: argv.id
                 });
+            else if(argv.clean){
+                sendResourceCommand('clean', {});
+            }
             }else{
                 console.log('Incorrect options [list, new, delete -i <id>]');
                 opts.showHelp();
@@ -167,30 +172,11 @@ function sendCastCommand(action, options){
         });
 
         ipc.of[name].on('message', function(data){
-            print(data);
+            console.log(data);
 
             debug('disconnecting core-child from cast-central-service');
             ipc.disconnect(name);
             process.exit(0);
         });
-    });
-}
-
-function print(results){
-    console.log(columnify(sort(results), {
-        truncate: true,
-        minWidth: 10,
-        maxWidth: 40,
-        columns: ["name", "location", "port"]
-    }));
-}
-
-function sort(arr){
-    debug('sorting result array', arr);
-    return arr.sort(function(l, r){
-        l = l.name;
-        r = r.name;
-
-        return(l.localeCompare(r) - r.localeCompare(l));
     });
 }

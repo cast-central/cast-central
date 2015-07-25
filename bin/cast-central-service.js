@@ -1,17 +1,59 @@
+#! /usr/bin/env nodejs
+
 // CAST-CENTRAL-SERVICE
 // --------------------
 
-var cluster     = require('cluster'),
-    ipc         = require('node-ipc'),
+var app         = require('express')(),
+    logger      = require('../lib/utils/logger.js'),
+    errors       = require('../lib/utils/errors.js'),
     debug       = require('debug')('cast-central-service'),
     chromecast  = require('../lib/casts/chromecast.js'),
-    castCentral = require('../index.js');
+    roku        = require('../lib/casts/roku.js'),
+    other       = require('../lib/casts/other.js');
+    //castCentral = require('../index.js');
 
 // The core service layer that directly 
 // interfaces with cast devices.  
-// Communication with this is only through 
-// the IPC stack.
+// Communication with this is made through 
+// restful calls.
+//
+// RESTFul endpoints:
+//   /<version>/<cast type>/list
+//   /<version>/<cast type>/launch
+//   /<version>/<cast type>/load
+//   /<version>/<cast type>/stop
+//   /<version>/<cast type>/seek
+//   /<version>/<cast type>/mute
+//   /<version>/<cast type>/volume
 
+// First route will log everything
+app.all('*', logger);
+
+// Overrides the error handler
+app.use(errors.error_500);
+
+// Chromecast
+app.get('/v1/chromecast/launch', chromecast.launch);
+app.get('/v1/chromecast/load', chromecast.load);
+app.get('/v1/chromecast/setVolume', chromecast.setVolume);
+app.get('/v1/chromecast/setMute', chromecast.setMute);
+app.get('/v1/chromecast/seek', chromecast.seek);
+app.get('/v1/chromecast/stop', chromecast.stop);
+
+// Roku
+// TODO
+
+// Other
+// TODO
+
+// Last route will handle if the route has 
+// not been found
+app.all('*', errors.error_404);
+
+// Start the service
+app.listen(process.argv[2] || '8000');
+
+/*
 raw_workers = {};
 workers = {};
 
@@ -20,55 +62,7 @@ ipc.config.socketRoot = '/tmp/';
 ipc.config.appspace = 'cast-central.core';
 
 if(cluster.isMaster){
-    ipc.config.id = '-master';
-
-    ipc.serve(function(){
-        ipc.server.on('message', function(data, socket){
-            switch(data.action){
-            case 'new':
-                debug('creating new resource', data, socket);
-                var child = cluster.fork([]);
-                raw_workers[child.id] = child;
-
-                child.on('message', function(msg){
-                    debug('master received message from worker', msg);
-                    if(msg.alive){
-                        workers[msg.id] = {
-                            id: msg.id,
-                            cast: msg.cast
-                        };
-                    }else{
-                        delete workers[msg.id];
-                        delete raw_workers[msg.id];
-                    }
-                });
-
-                debug('spawned child id is', child.id);
-                ipc.server.emit(socket, 'message', {'id': child.id});
-                break;
-            case 'delete':
-                debug('deleting', data.options.id);
-                if(raw_workers[data.options.id]){
-                    raw_workers[data.options.id].kill();
-                }
-
-                delete workers[data.options.id];
-                delete raw_workers[data.options.id];
-                ipc.server.emit(socket, 'message', 'done');
-                break;
-            case 'list':
-                debug('listing all resources');
-                ipc.server.emit(socket, 'message', jsonWorkers(raw_workers));
-                break;
-            default:
-                debug('unknown action:', data.action);
-                ipc.server.emit(socket, 'message', 'unknown action');
-            }
-        });
-    });
-
-    debug('starting ipc server');
-    ipc.server.start();
+    
 }else if(cluster.isWorker){
     debug('child-', cluster.worker.id, ' started');
     ipc.config.id = '-child-'+cluster.worker.id;
@@ -170,3 +164,4 @@ function processAction(cast, action, options, socket){
         ipc.server.emit(socket, 'message', 'invalid action');
     }
 }
+*/
