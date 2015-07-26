@@ -34,6 +34,7 @@
     "optimist": "*",
     "debug": "*",
     "async": "*",
+    "http": "*",
     "express": "*"
   },
   "devDependencies": {
