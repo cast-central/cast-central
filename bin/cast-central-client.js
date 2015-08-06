@@ -8,13 +8,15 @@ var debug      = require('debug')('cast-central-cli'),
     opts       = require('optimist')
         .usage(
             'Connect and control the cast-central-service.\n'+
-            'Usage: $0 {list|launch|load|setVolume|setMute|seek|stop} <options>'
+            'Usage: $0 {connect|list|status|launch|load|setVolume|setMute|seek|stop} <options>'
         )
         .describe('host', 'The hostname/ip of the cast-central-service').default('host', 'localhost').demand('host')
         .describe('port', 'The port of the cast-central-service').default('port', '8000').demand('port')
         .alias('p', 'protocol').describe('p', 'Cast discovery protocol to use [mdns, ssdp]')
         .alias('s', 'search').describe('s', 'Search term to look for cast devices')
         .alias('n', 'name').describe('n', 'Name of cast device to communicate with')
+        .describe('device-ip', 'IP Address of the casting device')
+        .describe('device-port', 'Port of the casting device')
         .alias('a', 'app').describe('a', 'Launch an application on the cast device [DefaultMediaReceiver, Youtube]')
         .alias('m', 'media').describe('m', 'Media to load onto launched application')
         .describe('params', 'Extra parameters to send for the load action')
@@ -41,7 +43,9 @@ if(argv.help){
             'app': argv.app,
             'media': argv.media,
             'params': argv.params,
-            'value': argv.value
+            'value': argv.value,
+            'address': argv['device-ip'],
+            'port': argv['device-port']
         };
 
         var serialized = serialize(options);
@@ -105,8 +109,8 @@ function serialize(options){
                 serialized += "&";
             }
             serialized += key+"="+options[key];
+            current++;
         }
-        current++;
     }
 
     debug('serialized', options, 'to', serialized);

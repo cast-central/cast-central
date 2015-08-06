@@ -18,13 +18,15 @@ var app         = require('express')(),
 // restful calls.
 //
 // RESTFul endpoints:
+//   /<version>/<cast type>/connect
 //   /<version>/<cast type>/list
 //   /<version>/<cast type>/launch
 //   /<version>/<cast type>/load
 //   /<version>/<cast type>/stop
 //   /<version>/<cast type>/seek
-//   /<version>/<cast type>/mute
-//   /<version>/<cast type>/volume
+//   /<version>/<cast type>/setMute
+//   /<version>/<cast type>/setVolume
+//   /<version>/<cast type>/status
 
 // First route will log everything
 app.all('*', logger);
@@ -33,13 +35,15 @@ app.all('*', logger);
 app.use(errors.error_500);
 
 // Chromecast
+app.get('/v1/chromecast/connect', chromecast.connect);
 app.get('/v1/chromecast/list', chromecast.list);
 app.get('/v1/chromecast/launch', chromecast.launch);
 app.get('/v1/chromecast/load', chromecast.load);
-app.get('/v1/chromecast/setVolume', chromecast.setVolume);
-app.get('/v1/chromecast/setMute', chromecast.setMute);
-app.get('/v1/chromecast/seek', chromecast.seek);
 app.get('/v1/chromecast/stop', chromecast.stop);
+app.get('/v1/chromecast/seek', chromecast.seek);
+app.get('/v1/chromecast/setMute', chromecast.setMute);
+app.get('/v1/chromecast/setVolume', chromecast.setVolume);
+app.get('/v1/chromecast/status', chromecast.status);
 
 // Roku
 // TODO
