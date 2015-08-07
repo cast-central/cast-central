@@ -5,7 +5,8 @@
 
 var app         = require('express')(),
     logger      = require('../lib/utils/logger.js'),
-    errors       = require('../lib/utils/errors.js'),
+    errors      = require('../lib/utils/errors.js'),
+    cors        = require('../lib/utils/cors.js'),
     debug       = require('debug')('cast-central-service'),
     chromecast  = require('../lib/v1/chromecast.js'),
     roku        = require('../lib/v1/roku.js'),
@@ -30,6 +31,9 @@ var app         = require('express')(),
 
 // First route will log everything
 app.all('*', logger);
+
+// Set the access allow cross origin headres
+app.use(cors);
 
 // Overrides the error handler
 app.use(errors.error_500);
