@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cast-central/cast-central.git"
+    "url": "https://github.com/cast-central/service.git"
   },
   "author": "Justin Lathrop",
   "license": "IDC",
   "bugs": {
-    "url": "https://github.com/cast-central/cast-central/issues"
+    "url": "https://github.com/cast-central/service/issues"
   },
   "dependencies": {
     "docco": "*",
