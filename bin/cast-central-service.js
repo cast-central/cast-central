@@ -20,6 +20,7 @@ var app         = require('express')(),
 //
 // RESTFul endpoints:
 //   /<version>/<cast type>/connect
+//   /<version>/<cast type>/disconnect
 //   /<version>/<cast type>/list
 //   /<version>/<cast type>/launch
 //   /<version>/<cast type>/load
@@ -39,15 +40,7 @@ app.use(cors);
 app.use(errors.error_500);
 
 // Chromecast
-app.get('/v1/chromecast/connect', chromecast.connect);
-app.get('/v1/chromecast/list', chromecast.list);
-app.get('/v1/chromecast/launch', chromecast.launch);
-app.get('/v1/chromecast/load', chromecast.load);
-app.get('/v1/chromecast/stop', chromecast.stop);
-app.get('/v1/chromecast/seek', chromecast.seek);
-app.get('/v1/chromecast/setMute', chromecast.setMute);
-app.get('/v1/chromecast/setVolume', chromecast.setVolume);
-app.get('/v1/chromecast/status', chromecast.status);
+app.get('/v1/chromecast/:action?', chromecast.handle_request);
 
 // Roku
 // TODO
