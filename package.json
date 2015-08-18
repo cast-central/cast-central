@@ -24,7 +24,6 @@
   "dependencies": {
     "docco": "*",
     "request": "*",
-    "mdns": "*",
     "xml2js": "*",
     "node-ssdp": "*",
     "castv2-client": "*",
@@ -35,6 +34,7 @@
     "debug": "*",
     "async": "*",
     "http": "*",
+    "mdns": "*",
     "express": "*",
     "merge": "*",
     "events": "*"
