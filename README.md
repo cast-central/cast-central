@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/cast-central/service.svg?style=svg)](https://circleci.com/gh/cast-central/service)
+
 # Cast Central
 Welcome to 'cast-central' you're one stop shop for interfacing with casting devices (chromecast, or roku, send pull request if more is needed!) all in one place.  Just start the 'cast-central-service' on a you're target linux machine and use the 'cast-central-client' to interface with it.  Further information on what each gives you follows.
 
