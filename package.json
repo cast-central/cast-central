@@ -5,7 +5,7 @@
   "keywords": ["cast", "casting", "roku", "cast-central", "service", "chromecast", "googlecast"],
   "main": "./bin/cast-central-service.js",
   "scripts": {
-    "clean": "rm -r docs coverage || true",
+    "clean": "rm -rf docs coverage",
     "doc": "./node_modules/.bin/docco -l linear ./lib/*/* ./lib/*",
     "lint": "./node_modules/.bin/jshint ./lib/*",
     "pretest": "npm run-script lint",
