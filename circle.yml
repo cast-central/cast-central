@@ -9,11 +9,11 @@ dependencies:
 
 test:
   override:
-	- npm run-script clean
-	- npm test
-	- cp -r coverage $CIRCLE_ARTIFACTS/
-	- npm run-script doc
-	- cp -r docs $CIRCLE_ARTIFACTS/
+    - npm run-script clean
+    - npm test
+    - cp -r coverage $CIRCLE_ARTIFACTS/
+    - npm run-script doc
+    - cp -r docs $CIRCLE_ARTIFACTS/
 
 deployment:
   hub:
