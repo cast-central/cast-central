@@ -24,7 +24,7 @@ describe('Discover', function(){
 		server.listen();
 	});
 
-	describe('#ssdp()', function(){
+	describe('#ssdp()', function(done){
 		it('discovers an ssdp service', function(){
 			ssdp_discover('tester', function(results){
 				should.exist(results);
@@ -32,8 +32,10 @@ describe('Discover', function(){
 				results.should.be.an.instanceOf(Array).and.have.lengthOf(1);
 				result[0].should.be.an.instanceOf(Object);
 				results[0].should.have.property('address', '127.0.0.1');
-				//results[0].should.have.property('port', 1234); TODO
-				//results[0].should.have.property('name', ''); TODO
+				results[0].should.have.property('port', 1234);
+				results[0].should.have.property('name', '');
+
+				done();
 			});
 		});
 	});

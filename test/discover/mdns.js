@@ -8,7 +8,7 @@ describe('Discover', function(){
 		ad.start();
 	});
 
-	describe('#mdns()', function(){
+	describe('#mdns()', function(done){
 		it('discovers an mdns service', function(){
 			mdns_discover('tester', function(results){
 				should.exist(results);
@@ -18,6 +18,8 @@ describe('Discover', function(){
 				results[0].should.have.property('address', '127.0.0.1');
 				results[0].should.have.property('port', 1234);
 				results[0].should.have.property('name', '');
+
+				done();
 			});
 		});
 	});
