@@ -1,4 +1,5 @@
 require('../../lib/utils/unique.js');
+var should = require('should');
 var assert = require("assert");
 
 describe('Array', function(){
@@ -7,9 +8,9 @@ describe('Array', function(){
 			var testArr = [{ name: 'test' },{ name: 'test' }];
 			var solutionArr = [{ name: 'test' }];
 
-			assert.deepEqual(solutionArr, testArr.unique());
-			assert.deepEqual([1,2], [1,1,2].unique());
+			testArr.unique().should.be.exactly(solutionArr).and.be.a.Array();
+			[1,1,2].unique().should.be.exactly([1,2]).and.be.a.Array();
+			[].unique().should.be.exactly([]).and.be.a.Array();
 		});
 	});
 });
- 
