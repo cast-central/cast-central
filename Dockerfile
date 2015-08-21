@@ -27,6 +27,6 @@ WORKDIR /
 ADD /startup.sh /startup.sh
 RUN chmod +x /startup.sh
 
-EXPOSE 8000
+EXPOSE 8000:8000
 ENV DEBUG=*
 ENTRYPOINT /startup.sh
