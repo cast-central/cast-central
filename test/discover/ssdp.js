@@ -1,4 +1,4 @@
-var ssdp = new require('node-ssdp').Server({
+var ssdp = new (require('node-ssdp')).Server({
 		'location': 'http://127.0.0.1:9000/info',
 		'udn': 'tester'
 	}),
@@ -8,32 +8,37 @@ var ssdp = new require('node-ssdp').Server({
 
 describe('Discover', function(){
 	before(function(){
-		// Set up SSDP
-		ssdp.addUSN('upnp:rootdevice');
-		ssdp.addUSN('urn:schemas-upnp-org:device:MediaServer:1');
-		ssdp.addUSN('urn:schemas-upnp-org:service:ContentDirectory:1');
-		ssdp.addUSN('urn:schemas-upnp-org:service:ConnectionManager:1');
-		ssdp.on('advertise-alive', function(headers){  });
-		ssdp.on('advertise-bye', function(headers){  });
 		ssdp.start();
 
 		// Set up more information endpoint
 		server.get('/info', function(req, res){
-			res.send('9000');
+			res.send("<root>"+
+                            "<URLBase>"+
+                                "http://127.0.0.1:1234"+
+                            "</URLBase>"+
+                            "<device>"+
+                                "<friendlyName>"+
+                                    "tester"+
+                                "</friendlyName>"+
+                            "</device>"+
+                        "</root>");
 		});
-		server.listen();
+
+		server.listen(9000, '127.0.0.1');
 	});
 
-	describe('#ssdp()', function(done){
-		it('discovers an ssdp service', function(){
+	describe('#ssdp()', function(){
+		it('discovers a ssdp service', function(done){
+                        this.timeout(5000);
+
 			ssdp_discover('tester', function(results){
 				should.exist(results);
 				results.should.be.a.Array();
 				results.should.be.an.instanceOf(Array).and.have.lengthOf(1);
-				result[0].should.be.an.instanceOf(Object);
+				results[0].should.be.an.instanceOf(Object);
 				results[0].should.have.property('address', '127.0.0.1');
 				results[0].should.have.property('port', 1234);
-				results[0].should.have.property('name', '');
+				results[0].should.have.property('name', 'tester');
 
 				done();
 			});
@@ -42,6 +47,6 @@ describe('Discover', function(){
 
 	after(function(){
 		ssdp.stop();
-		server.stop();
 	});
 });
+

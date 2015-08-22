@@ -13,7 +13,7 @@ describe('Discover', function(){
 				1234,
 				{
 					name: 'tester',
-					interfaceIndex: 'docker0'
+					//interfaceIndex: 'docker0'
 				}
 			);
 			ad.start();
@@ -27,7 +27,7 @@ describe('Discover', function(){
 				results.should.be.a.Array();
 				results.should.be.an.instanceOf(Array).and.have.lengthOf(1);
 				results[0].should.be.an.instanceOf(Object);
-				results[0].should.have.property('address', '172.17.42.1');
+				//results[0].should.have.property('address', '172.17.42.1');
 				results[0].should.have.property('port', 1234);
 				results[0].should.have.property('name', 'tester');
 
