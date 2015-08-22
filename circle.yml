@@ -3,10 +3,6 @@ machine:
     version: 0.12.0
   services:
     - docker
-dependencies:
-  override:
-    - docker info
-    - docker build -t castcentral/service .
 test:
   override:
     - npm run-script clean
@@ -18,5 +14,6 @@ deployment:
   hub:
     branch: master
     commands:
+      - docker build -t castcentral/service .
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push castcentral/service
