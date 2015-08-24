@@ -3,15 +3,15 @@
 // CAST-CENTRAL-SERVICE
 // --------------------
 
-var app         = require('express')(),
-    logger      = require('../lib/utils/logger.js'),
-    errors      = require('../lib/utils/errors.js'),
-    cors        = require('../lib/utils/cors.js'),
-    debug       = require('debug')('cast-central-service'),
-    chromecast  = require('../lib/v1/chromecast.js'),
-    roku        = require('../lib/v1/roku.js'),
-    other       = require('../lib/v1/other.js');
-    //castCentral = require('../index.js');
+var app              = require('express')(),
+    logger           = require('../lib/utils/logger.js'),
+    errors           = require('../lib/utils/errors.js'),
+    cors             = require('../lib/utils/cors.js'),
+    debug            = require('debug')('cast-central-service'),
+    handle_interface = require('../lib/utils/handle_interface.js'),
+    chromecast       = require('../lib/v1/chromecast.js'),
+    roku             = require('../lib/v1/roku.js'),
+    other            = require('../lib/v1/other.js');
 
 // The core service layer that directly 
 // interfaces with cast devices.  
@@ -40,17 +40,13 @@ app.use(cors);
 app.use(errors.error_500);
 
 // Chromecast
-app.get('/v1/chromecast/:action?', chromecast.handle_request);
-
-// Roku
-// TODO
-
-// Other
-// TODO
+app.get('/v1/chromecast/:action?', handle_interface(chromecast));
 
 // Last route will handle if the route has 
 // not been found
 app.all('*', errors.error_404);
 
 // Start the service
-app.listen(process.argv[2] || '8000');
+var port = process.argv[2] || '8000';
+debug('service is lisening on port', port);
+app.listen(port);
