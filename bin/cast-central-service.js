@@ -9,9 +9,7 @@ var app              = require('express')(),
     cors             = require('../lib/utils/cors.js'),
     debug            = require('debug')('cast-central-service'),
     handle_interface = require('../lib/utils/handle_interface.js'),
-    chromecast       = require('../lib/v1/chromecast.js'),
-    roku             = require('../lib/v1/roku.js'),
-    other            = require('../lib/v1/other.js');
+    chromecast       = require('../lib/v1/chromecast.js');
 
 // The core service layer that directly 
 // interfaces with cast devices.  

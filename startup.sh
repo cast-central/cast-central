@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "Starting dbu-daemon"
+echo "Starting dbus-daemon"
 /usr/bin/dbus-daemon --system
 
 echo "Starting avahi-daemon"
