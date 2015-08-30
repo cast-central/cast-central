@@ -1,6 +1,6 @@
 {
   "name": "cast-central",
-  "version": "0.1.0-2",
+  "version": "0.1.0-3",
   "description": "Core tools/utilities for interfacing with castable devices.",
   "keywords": ["cast", "casting", "roku", "cast-central", "service", "chromecast", "googlecast"],
   "main": "./bin/cast-central-service.js",
