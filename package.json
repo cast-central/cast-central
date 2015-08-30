@@ -3,9 +3,9 @@
   "version": "0.0.1-2",
   "description": "Core tools/utilities for interfacing with castable devices.",
   "keywords": ["cast", "casting", "roku", "cast-central", "service", "chromecast", "googlecast"],
-  "main": "index.js",
+  "main": "./bin/cast-central-service.js",
   "scripts": {
-    "clean": "rm -r docs coverage || true",
+    "clean": "rm -rf docs coverage",
     "doc": "./node_modules/.bin/docco -l linear ./lib/*/* ./lib/*",
     "lint": "./node_modules/.bin/jshint ./lib/*",
     "pretest": "npm run-script lint",
@@ -14,17 +14,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cast-central/cast-central.git"
+    "url": "https://github.com/cast-central/service.git"
   },
   "author": "Justin Lathrop",
   "license": "IDC",
   "bugs": {
-    "url": "https://github.com/cast-central/cast-central/issues"
+    "url": "https://github.com/cast-central/service/issues"
   },
   "dependencies": {
     "docco": "*",
     "request": "*",
-    "mdns": "*",
     "xml2js": "*",
     "node-ssdp": "*",
     "castv2-client": "*",
@@ -34,7 +33,11 @@
     "optimist": "*",
     "debug": "*",
     "async": "*",
-    "node-ipc": "*"
+    "http": "*",
+    "mdns": "*",
+    "express": "*",
+    "merge": "*",
+    "events": "*"
   },
   "devDependencies": {
     "jshint": "*",

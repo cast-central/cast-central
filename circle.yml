@@ -1,0 +1,19 @@
+machine:
+  node:
+    version: 0.12.0
+  services:
+    - docker
+test:
+  override:
+    - npm test
+    - cp -r coverage $CIRCLE_ARTIFACTS/
+    - npm run-script doc
+    - cp -r docs $CIRCLE_ARTIFACTS/
+deployment:
+  hub:
+    branch: master
+    commands:
+      - docker build -t castcentral/service .
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker push castcentral/service
+

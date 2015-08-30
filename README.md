@@ -1,12 +1,12 @@
+[![Circle CI](https://circleci.com/gh/cast-central/service.svg?style=svg)](https://circleci.com/gh/cast-central/service)
+
 # Cast Central
-Welcome to 'cast-central' you're one stop shop for interfacing with casting devices (chromecast, or roku, send pull request is more is needed!) all in one place.  Just start the 'cast-central-service' on a you're target linux machine and install the 'cast-central-client' to interface with it.  Further information on what each gives you follows.
+Welcome to 'cast-central' you're one stop shop for interfacing with casting devices (chromecast, or roku, send pull request if more is needed!) all in one place.  Just start the 'cast-central-service' on a you're target linux machine and use the 'cast-central-client' to interface with it.  Further information on what each gives you follows.
 
 ![the_ecosystem](https://raw.githubusercontent.com/cast-central/cast-central/wiki_stuff/images/the_ecosystem.png)
 
 ## cast-central-service
-This is the main service which controls all the casting devices on a single network.  It has a notion of resources (which translate to processes) attached to one and only one casting device (or none).  The idea is, for each casting device you can spawn a new resource to manage it giving you the ability to load media onto it, mute, set the volume, or whatever else that specific casting device allows.
-
-The communication architecture uses 'node-ipc' a nodejs Inter Process Communication protocol for communicating over local sockets on a linux machine.  No reason for using IPC over other forms of communication such as ZeroMQ, or just plain ole TCP, just felt like using IPC.
+This is the main service which controls all the casting devices on a single network.  The cast-central-service is an express-js RESTFul web service which speak GET's and returns JSON.  The cast-central-client simply helps generate the GET requests for the user.
 
 Below are the current actions the cast-central-service can perform:
 ### Discovery
@@ -31,30 +31,22 @@ This is the main interface for controlling the 'cast-central-service' while it's
 ```
 $ cast-central-client.js --help
 Connect and control the cast-central-service.
-Usage: node ./bin/cast-central-client.js <subset> <options>
-
-Subset:
-  resource	Controls what processes run within the cast-central-service
-  cast		Sends commands for controlling casting devices
+Usage: nodejs ./bin/cast-central-client.js {list|launch|load|setVolume|setMute|seek|stop} <options>
 
 Options:
-  -l, --list      Lists all currently running resources or casts available
-  -n, --new       Starts a new resource (shouldn't be used)
-  -d, --delete    Forcefully stops and deletes a resource
-  -i, --id        Used when forcefully stopping a resource
-  -p, --protocol  Cast discovery protocol to use [mdns, ssdp]                               [default: "mdns"]
-  -s, --search    Search term to look for cast devices                                      [default: "googlecast"]
-  -c, --cast      Name of cast device to communicate with
+  --host          The hostname/ip of the cast-central-service                               [required]  [default: "localhost"]
+  --port          The port of the cast-central-service                                      [required]  [default: "8000"]
+  -p, --protocol  Cast discovery protocol to use [mdns, ssdp]                             
+  -s, --search    Search term to look for cast devices                                    
+  -n, --name      Name of cast device to communicate with                                 
   -a, --app       Launch an application on the cast device [DefaultMediaReceiver, Youtube]
-  -m, --media     Media to load onto launched application
-  --load          Load media to the currently launched application
-  --launch        Launch an application the casting device
-  -v, --volume    Set the volume of the casting device                                      [default: -1]
-  --mute          Mute the casting device [true, false]                                     [default: -1]
-  -t, --timeout   Timeout in seconds to wait for connect [> 0]                              [default: 10]
-  --seek          Seek the media currently being casted                                     [default: 0]
-  --stop          Stop the currently launched app
-  -h, --help      Shows this usage
+  -m, --media     Media to load onto launched application                                 
+  --params        Extra parameters to send for the load action                            
+  -v, --value     Value for seek, mute, or volume                                         
+  --version       The version of the cast-central-service                                   [required]  [default: "v1"]
+  --type          The type of cast to perform action on, available is chromecast            [required]  [default: "chromecast"]
+  -t, --timeout   Amount of seconds to wait until give up                                   [default: 10]
+  -h, --help      Shows this usage                                                        
 ```
 
 # Contribute
